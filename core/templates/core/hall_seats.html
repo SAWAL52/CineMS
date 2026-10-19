@@ -1,0 +1,402 @@
+
+{% extends "core/base.html" %}
+
+{% block title %}Select Seats | CineMS{% endblock %}
+
+{% block content %}
+
+
+
+<!-- Django Messages: Top Right Corner -->
+<div class="fixed top-5 right-5 z-50 space-y-3">
+    {% for message in messages %}
+        <div class="toast-message px-5 py-3 rounded-lg shadow-lg text-white
+            {% if message.tags == 'success' %}
+                bg-green-600
+            {% elif message.tags == 'error' %}
+                bg-red-600
+            {% else %}
+                bg-blue-600
+            {% endif %}">
+            {{ message }}
+        </div>
+    {% endfor %}
+</div>
+
+<!-- Automatically Fade Messages -->
+<script>
+    document.querySelectorAll('.toast-message').forEach((message) => {
+        setTimeout(() => {
+            message.style.transition =
+                'opacity 0.5s ease, transform 0.5s ease';
+
+            message.style.opacity = '0';
+            message.style.transform = 'translateX(30px)';
+
+            setTimeout(() => {
+                message.remove();
+            }, 500);
+
+        }, 3000);
+    });
+</script>
+
+
+<div class="min-h-screen bg-gray-950 text-white px-4 py-10">
+    <div class="max-w-5xl mx-auto">
+
+        <!-- Back Navigation -->
+        <a href="{% url 'home' %}"
+           class="inline-flex items-center gap-2 text-gray-400 hover:text-white mb-8 transition">
+            <span>&larr;</span>
+            <span>Back to Home</span>
+        </a>
+
+        <!-- Show Information -->
+        <div class="mb-8">
+            <p class="text-rose-500 uppercase tracking-widest text-sm font-semibold mb-2">
+                Book Your Experience
+            </p>
+
+            <h1 class="text-3xl md:text-4xl font-bold mb-3">
+                Select Your Seats
+            </h1>
+
+            <div class="text-gray-400 flex flex-wrap gap-x-5 gap-y-2 text-sm">
+                <span>
+                    🎬 {{ show.movie.name }}
+                </span>
+
+                <span>
+                    📍 {{ show.cinemahall.cinema.name|default:"Cinema" }}
+                    — {{ show.cinemahall.name }}
+                </span>
+
+                <span>
+                    🕒 {{ show.showtime|date:"M d, Y · h:i A" }}
+                </span>
+            </div>
+        </div>
+
+        <!-- Seat Selection Card -->
+        <div class="bg-gray-900 border border-gray-800 rounded-2xl p-4 md:p-8">
+
+            <!-- Seat Legend -->
+            <div class="flex flex-wrap justify-center gap-5 mb-8 text-sm">
+                <div class="flex items-center gap-2">
+                    <span class="w-4 h-4 rounded bg-emerald-500"></span>
+                    <span class="text-gray-300">Available</span>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <span class="w-4 h-4 rounded bg-rose-500"></span>
+                    <span class="text-gray-300">Selected</span>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <span class="w-4 h-4 rounded bg-gray-600"></span>
+                    <span class="text-gray-300">Booked</span>
+                </div>
+            </div>
+
+            <!-- Screen -->
+            <div class="max-w-2xl mx-auto mb-12">
+                <div class="h-2 rounded-full bg-gradient-to-r from-transparent via-rose-400 to-transparent shadow-lg shadow-rose-500/20"></div>
+
+                <p class="text-center text-xs text-gray-500 uppercase tracking-[0.4em] mt-4">
+                    Screen This Way
+                </p>
+            </div>
+
+            <!-- Seats -->
+            <div class="flex justify-center">
+                <div class="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 gap-3 md:gap-4">
+
+                    {% for seat in seats %}
+
+                        {% if seat.id in occupied_seat_ids %}
+
+                            <!-- Booked Seat -->
+                            <button
+                                type="button"
+                                disabled
+                                aria-label="Seat {{ seat.name }} is booked"
+                                title="Seat {{ seat.name }} is already booked"
+                                class="w-12 h-11 sm:w-14 sm:h-12 rounded-t-xl rounded-b-md bg-gray-700 text-gray-400 text-xs sm:text-sm font-semibold cursor-not-allowed opacity-70">
+                                {{ seat.name }}
+                            </button>
+
+                        {% else %}
+
+                            <!-- Available Seat -->
+                            <button
+                                type="button"
+                                data-seat-id="{{ seat.id }}"
+                                data-seat-name="{{ seat.name }}"
+                                aria-pressed="false"
+                                aria-label="Select seat {{ seat.name }}"
+                                class="seat-button w-12 h-11 sm:w-14 sm:h-12 rounded-t-xl rounded-b-md bg-emerald-600 hover:bg-emerald-500 text-white text-xs sm:text-sm font-semibold transition-all duration-200 hover:-translate-y-1 focus:outline-none focus:ring-2 focus:ring-emerald-300">
+                                {{ seat.name }}
+                            </button>
+
+                        {% endif %}
+
+                    {% empty %}
+
+                        <p class="col-span-4 sm:col-span-6 md:col-span-8 text-center text-gray-400 py-8">
+                            No seats have been added to this hall yet.
+                        </p>
+
+                    {% endfor %}
+
+                </div>
+            </div>
+
+            <!-- Booking Summary -->
+            <div class="mt-12 border-t border-gray-800 pt-6">
+
+                <h2 class="text-xl font-bold mb-5">
+                    Booking Summary
+                </h2>
+
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+
+                    <div class="bg-gray-800/70 rounded-xl p-4">
+                        <p class="text-gray-400 text-sm mb-2">
+                            Selected Seats
+                        </p>
+
+                        <p id="selected-count" class="text-2xl font-bold">
+                            0
+                        </p>
+                    </div>
+
+                    <div class="bg-gray-800/70 rounded-xl p-4">
+                        <p class="text-gray-400 text-sm mb-2">
+                            Seat Numbers
+                        </p>
+
+                        <p id="selected-names" class="text-lg font-semibold break-words">
+                            None
+                        </p>
+                    </div>
+
+                    <div class="bg-gray-800/70 rounded-xl p-4">
+                        <p class="text-gray-400 text-sm mb-2">
+                            Total Price
+                        </p>
+
+                        <p class="text-2xl font-bold text-rose-400">
+                            Rs. <span id="total-price">0</span>
+                        </p>
+
+                        <p class="text-gray-500 text-xs mt-1">
+                            Rs. {{ show.price }} per seat
+                        </p>
+                    </div>
+
+                </div>
+
+                <!-- POST to the same hall_seats_view -->
+                <form
+                    id="booking-form"
+                    method="POST"
+                    action="{% url 'hall_seats' show.id %}"
+                    class="mt-7">
+
+                    {% csrf_token %}
+
+                    <!-- Selected database seat IDs -->
+                    <input
+                        type="hidden"
+                        name="seat_ids"
+                        id="seat-ids"
+                        value="">
+
+                    <div class="flex flex-col sm:flex-row gap-3">
+
+                        <button
+                            type="submit"
+                            id="continue-button"
+                            disabled
+                            class="flex-1 rounded-xl bg-rose-600 hover:bg-rose-500 disabled:bg-gray-700 disabled:text-gray-500 disabled:cursor-not-allowed px-6 py-3.5 font-bold transition">
+                            Continue →
+                        </button>
+
+                        <button
+                            type="button"
+                            id="clear-selection"
+                            class="rounded-xl border border-gray-700 hover:border-gray-500 hover:bg-gray-800 px-6 py-3.5 font-semibold transition">
+                            Clear Selection
+                        </button>
+
+                    </div>
+
+                    <p id="selection-message"
+                       role="status"
+                       aria-live="polite"
+                       class="text-sm text-gray-400 mt-4 text-center">
+                        Select one or more available seats to continue.
+                    </p>
+
+                </form>
+
+            </div>
+        </div>
+
+        <!-- Show ID Reference -->
+        <p class="text-center text-gray-600 text-xs mt-5">
+            Show ID: {{ show.id }}
+        </p>
+
+    </div>
+</div>
+
+{% endblock %}
+
+
+
+{% block extra_js %}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+
+    const seatButtons = document.querySelectorAll(".seat-button");
+    const selectedCount = document.getElementById("selected-count");
+    const selectedNames = document.getElementById("selected-names");
+    const totalPrice = document.getElementById("total-price");
+    const continueButton = document.getElementById("continue-button");
+    const clearButton = document.getElementById("clear-selection");
+    const bookingForm = document.getElementById("booking-form");
+    const seatIdsInput = document.getElementById("seat-ids");
+    const selectionMessage = document.getElementById("selection-message");
+
+    const ticketPrice = Number("{{ show.price }}");
+
+    // Map structure: database seat ID -> seat name
+    const selectedSeats = new Map();
+
+    function updateSummary() {
+        const count = selectedSeats.size;
+        const names = Array.from(selectedSeats.values());
+
+        selectedCount.textContent = count;
+        selectedNames.textContent = count > 0 ? names.join(", ") : "None";
+        totalPrice.textContent = (count * ticketPrice).toLocaleString("en-IN");
+
+        continueButton.disabled = count === 0;
+
+        if (count === 0) {
+            selectionMessage.textContent =
+                "Select one or more available seats to continue.";
+        } else {
+            selectionMessage.textContent =
+                count + (count === 1
+                    ? " seat selected."
+                    : " seats selected.") + " Ready to continue.";
+        }
+    }
+
+    // Toggle seat selection
+    seatButtons.forEach(function (button) {
+        button.addEventListener("click", function () {
+
+            const seatId = button.dataset.seatId;
+            const seatName = button.dataset.seatName;
+
+            if (selectedSeats.has(seatId)) {
+
+                // Deselect seat
+                selectedSeats.delete(seatId);
+
+                button.classList.remove(
+                    "bg-rose-500",
+                    "ring-2",
+                    "ring-rose-300",
+                    "scale-105"
+                );
+
+                button.classList.add("bg-emerald-600");
+                button.setAttribute("aria-pressed", "false");
+
+            } else {
+
+                // Select seat
+                selectedSeats.set(seatId, seatName);
+
+                button.classList.remove("bg-emerald-600");
+                button.classList.add(
+                    "bg-rose-500",
+                    "ring-2",
+                    "ring-rose-300",
+                    "scale-105"
+                );
+
+                button.setAttribute("aria-pressed", "true");
+            }
+
+            updateSummary();
+        });
+    });
+
+    // Clear all selected seats
+    clearButton.addEventListener("click", function () {
+
+        selectedSeats.clear();
+
+        seatButtons.forEach(function (button) {
+            button.classList.remove(
+                "bg-rose-500",
+                "ring-2",
+                "ring-rose-300",
+                "scale-105"
+            );
+
+            button.classList.add("bg-emerald-600");
+            button.setAttribute("aria-pressed", "false");
+        });
+
+        seatIdsInput.value = "";
+        updateSummary();
+    });
+
+    // Send selected seat IDs to the same Django view
+    bookingForm.addEventListener("submit", function (event) {
+
+        if (selectedSeats.size === 0) {
+            event.preventDefault();
+            selectionMessage.textContent =
+                "Please select at least one seat.";
+            return;
+        }
+
+        // Example: "12,13,14"
+        seatIdsInput.value = Array.from(selectedSeats.keys()).join(",");
+
+        // The form submits normally using POST.
+        // Django returns the JSON response from hall_seats_view.
+    });
+
+    updateSummary();
+});
+</script>
+{% endblock %}
+
+<!-- Django Messages: Top Right -->
+<div class="fixed top-5 right-5 z-50 space-y-3">
+    {% for message in messages %}
+        <div class="toast-message px-5 py-3 rounded-lg shadow-lg text-white
+            {% if message.tags == 'success' %}
+                bg-green-600
+            {% elif message.tags == 'error' %}
+                bg-red-600
+            {% elif message.tags == 'warning' %}
+                bg-yellow-500
+            {% else %}
+                bg-blue-600
+            {% endif %}">
+
+            {{ message }}
+
+        </div>
+    {% endfor %}
+</div>

@@ -1,0 +1,338 @@
+{% extends "cine_admin/base.html" %}
+
+{% block title %}Dashboard | CineMS Admin{% endblock %}
+
+{% block content %}
+<div class="mx-auto w-full max-w-7xl space-y-10">
+
+    <!-- Page Header -->
+    <header class="flex flex-col gap-5 border-b border-gray-800 pb-6 sm:flex-row sm:items-center sm:justify-between">
+        <div class="min-w-0">
+            <p class="text-xs font-bold uppercase tracking-[0.2em] text-red-400">
+                CineMS Management
+            </p>
+            <h1 class="mt-2 text-3xl font-bold tracking-tight text-white sm:text-4xl">
+                Dashboard
+            </h1>
+            <p class="mt-2 text-sm leading-6 text-gray-400">
+                Welcome back, {{ request.user.get_short_name|default:request.user.username }}. Here's an overview of your cinema operations.
+            </p>
+        </div>
+
+
+    </header>
+
+    <!-- Primary Statistics -->
+    <section>
+        <div class="mb-4">
+            <h2 class="text-lg font-semibold text-white">Overview</h2>
+            <p class="mt-1 text-sm text-gray-500">A summary of your cinema system infrastructure.</p>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 2xl:grid-cols-4">
+
+            <article class="min-w-0 rounded-xl border border-gray-800 bg-gray-900 p-5 transition hover:border-red-500/50">
+                <div class="flex items-center justify-between gap-3">
+                    <p class="text-sm font-medium text-gray-400">Total Movies</p>
+                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-red-500/10 text-xl">🎬</span>
+                </div>
+                <p class="mt-5 text-3xl font-bold tabular-nums text-white">{{ movie_count|default:0 }}</p>
+                <a href="{% url 'cine_admin:movie_list' %}"
+                   class="mt-4 inline-flex items-center text-sm font-medium text-red-400 hover:text-red-300">
+                    Browse movies <span class="ml-1">→</span>
+                </a>
+            </article>
+
+            <article class="min-w-0 rounded-xl border border-gray-800 bg-gray-900 p-5 transition hover:border-blue-500/50">
+                <div class="flex items-center justify-between gap-3">
+                    <p class="text-sm font-medium text-gray-400">Cinema Venues</p>
+                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-blue-500/10 text-xl">🏢</span>
+                </div>
+                <p class="mt-5 text-3xl font-bold tabular-nums text-white">{{ venue_count|default:0 }}</p>
+                <a href="{% url 'cine_admin:venue_list' %}"
+                   class="mt-4 inline-flex items-center text-sm font-medium text-blue-400 hover:text-blue-300">
+                    View venues <span class="ml-1">→</span>
+                </a>
+            </article>
+
+            <article class="min-w-0 rounded-xl border border-gray-800 bg-gray-900 p-5 transition hover:border-purple-500/50">
+                <div class="flex items-center justify-between gap-3">
+                    <p class="text-sm font-medium text-gray-400">Auditoriums</p>
+                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-purple-500/10 text-xl">💺</span>
+                </div>
+                <p class="mt-5 text-3xl font-bold tabular-nums text-white">{{ auditorium_count|default:0 }}</p>
+                <a href="{% url 'cine_admin:auditorium_list' %}"
+                   class="mt-4 inline-flex items-center text-sm font-medium text-purple-400 hover:text-purple-300">
+                    View auditoriums <span class="ml-1">→</span>
+                </a>
+            </article>
+
+            <article class="min-w-0 rounded-xl border border-gray-800 bg-gray-900 p-5 transition hover:border-green-500/50">
+                <div class="flex items-center justify-between gap-3">
+                    <p class="text-sm font-medium text-gray-400">Scheduled Shows</p>
+                    <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-green-500/10 text-xl">📅</span>
+                </div>
+                <p class="mt-5 text-3xl font-bold tabular-nums text-white">{{ show_count|default:0 }}</p>
+                <a href="{% url 'cine_admin:show_list' %}"
+                   class="mt-4 inline-flex items-center text-sm font-medium text-green-400 hover:text-green-300">
+                    View shows <span class="ml-1">→</span>
+                </a>
+            </article>
+
+        </div>
+    </section>
+
+    <!-- Quick Actions -->
+    <section>
+        <div class="mb-4">
+            <h2 class="text-lg font-semibold text-white">Quick Actions</h2>
+            <p class="mt-1 text-sm text-gray-500">
+                Jump directly to a common management task.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+
+            <a href="{% url 'cine_admin:movie_list' %}"
+               class="group flex min-w-0 items-start gap-4 rounded-xl border border-gray-800 bg-gray-900 p-5 transition hover:border-red-500/60 hover:bg-gray-800/80">
+                <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-red-500/10 text-2xl">🎞️</span>
+                <div class="min-w-0 flex-1">
+                    <h3 class="font-semibold text-white group-hover:text-red-400">Movie Library</h3>
+                    <p class="mt-1 text-sm leading-5 text-gray-400">Browse movies and poster details.</p>
+                </div>
+                <span class="shrink-0 text-gray-600 transition group-hover:translate-x-1 group-hover:text-red-400">→</span>
+            </a>
+
+            {% if request.user.is_superuser %}
+            <a href="{% url 'cine_admin:movie_create' %}"
+               class="group flex min-w-0 items-start gap-4 rounded-xl border border-gray-800 bg-gray-900 p-5 transition hover:border-red-500/60 hover:bg-gray-800/80">
+                <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-red-500/10 text-2xl">➕</span>
+                <div class="min-w-0 flex-1">
+                    <h3 class="font-semibold text-white group-hover:text-red-400">Add Movie</h3>
+                    <p class="mt-1 text-sm leading-5 text-gray-400">Create entry and upload posters.</p>
+                </div>
+                <span class="shrink-0 text-gray-600 transition group-hover:translate-x-1 group-hover:text-red-400">→</span>
+            </a>
+            {% endif %}
+
+            <a href="{% url 'cine_admin:venue_create' %}"
+               class="group flex min-w-0 items-start gap-4 rounded-xl border border-gray-800 bg-gray-900 p-5 transition hover:border-blue-500/60 hover:bg-gray-800/80">
+                <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-blue-500/10 text-2xl">🏢</span>
+                <div class="min-w-0 flex-1">
+                    <h3 class="font-semibold text-white group-hover:text-blue-400">Add Venue</h3>
+                    <p class="mt-1 text-sm leading-5 text-gray-400">Register a new cinema location.</p>
+                </div>
+                <span class="shrink-0 text-gray-600 transition group-hover:translate-x-1 group-hover:text-blue-400">→</span>
+            </a>
+
+            <a href="{% url 'cine_admin:auditorium_create' %}"
+               class="group flex min-w-0 items-start gap-4 rounded-xl border border-gray-800 bg-gray-900 p-5 transition hover:border-purple-500/60 hover:bg-gray-800/80">
+                <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-purple-500/10 text-2xl">💺</span>
+                <div class="min-w-0 flex-1">
+                    <h3 class="font-semibold text-white group-hover:text-purple-400">Add Auditorium</h3>
+                    <p class="mt-1 text-sm leading-5 text-gray-400">Configure seats and halls for a venue.</p>
+                </div>
+                <span class="shrink-0 text-gray-600 transition group-hover:translate-x-1 group-hover:text-purple-400">→</span>
+            </a>
+
+            <a href="{% url 'cine_admin:show_create' %}"
+               class="group flex min-w-0 items-start gap-4 rounded-xl border border-gray-800 bg-gray-900 p-5 transition hover:border-green-500/60 hover:bg-gray-800/80">
+                <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-green-500/10 text-2xl">📅</span>
+                <div class="min-w-0 flex-1">
+                    <h3 class="font-semibold text-white group-hover:text-green-400">Schedule Show</h3>
+                    <p class="mt-1 text-sm leading-5 text-gray-400">Set screening times and ticket prices.</p>
+                </div>
+                <span class="shrink-0 text-gray-600 transition group-hover:translate-x-1 group-hover:text-green-400">→</span>
+            </a>
+
+            <a href="{% url 'cine_admin:show_list' %}"
+               class="group flex min-w-0 items-start gap-4 rounded-xl border border-gray-800 bg-gray-900 p-5 transition hover:border-yellow-500/60 hover:bg-gray-800/80">
+                <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-yellow-500/10 text-2xl">📋</span>
+                <div class="min-w-0 flex-1">
+                    <h3 class="font-semibold text-white group-hover:text-yellow-400">Show Schedule</h3>
+                    <p class="mt-1 text-sm leading-5 text-gray-400">Review all active screenings.</p>
+                </div>
+                <span class="shrink-0 text-gray-600 transition group-hover:translate-x-1 group-hover:text-yellow-400">→</span>
+            </a>
+
+        </div>
+    </section>
+
+    <!-- Booking and Payment Management -->
+    <section>
+        <div class="mb-4">
+            <h2 class="text-lg font-semibold text-white">
+                Booking & Payment Management
+            </h2>
+            <p class="mt-1 text-sm text-gray-500">
+                Monitor live customers, seat reservations, and transaction health.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
+
+            <a href="{% url 'cine_admin:user_booking_list' %}"
+               class="group rounded-xl border border-gray-800 bg-gray-900 p-5 transition hover:border-cyan-500/60 hover:bg-gray-800/80">
+                <div class="flex items-center justify-between">
+                    <p class="text-sm font-medium text-gray-400">Active Users</p>
+                    <span class="text-lg">👤</span>
+                </div>
+                <p class="mt-3 text-3xl font-bold tabular-nums text-white">
+                    {{ active_user_count|default:0 }}
+                </p>
+                <p class="mt-3 text-sm font-medium text-cyan-400 group-hover:text-cyan-300">
+                    View users and bookings →
+                </p>
+            </a>
+
+            <a href="{% url 'cine_admin:booking_list' %}"
+               class="group rounded-xl border border-gray-800 bg-gray-900 p-5 transition hover:border-blue-500/60 hover:bg-gray-800/80">
+                <div class="flex items-center justify-between">
+                    <p class="text-sm font-medium text-gray-400">Total Bookings</p>
+                    <span class="text-lg">🎟️</span>
+                </div>
+                <p class="mt-3 text-3xl font-bold tabular-nums text-white">
+                    {{ booking_count|default:0 }}
+                </p>
+                <p class="mt-3 text-sm font-medium text-blue-400 group-hover:text-blue-300">
+                    Search and filter bookings →
+                </p>
+            </a>
+
+            <a href="{% url 'cine_admin:payment_list' %}"
+               class="group rounded-xl border border-gray-800 bg-gray-900 p-5 transition hover:border-green-500/60 hover:bg-gray-800/80">
+                <div class="flex items-center justify-between">
+                    <p class="text-sm font-medium text-gray-400">Successful Payments</p>
+                    <span class="text-lg">💳</span>
+                </div>
+                <p class="mt-3 text-3xl font-bold tabular-nums text-white">
+                    {{ successful_payment_count|default:0 }}
+                </p>
+                <p class="mt-3 text-sm font-medium text-green-400 group-hover:text-green-300">
+                    View payment records →
+                </p>
+            </a>
+
+            <div class="rounded-xl border border-gray-800 bg-gray-900 p-5">
+                <div class="flex items-center justify-between">
+                    <p class="text-sm font-medium text-gray-400">Confirmed Reservations</p>
+                    <span class="text-lg">✅</span>
+                </div>
+                <p class="mt-3 text-3xl font-bold tabular-nums text-white">
+                    {{ confirmed_booking_count|default:0 }}
+                </p>
+            </div>
+
+            <div class="rounded-xl border border-gray-800 bg-gray-900 p-5">
+                <div class="flex items-center justify-between">
+                    <p class="text-sm font-medium text-gray-400">Pending Reservations</p>
+                    <span class="text-lg">⏳</span>
+                </div>
+                <p class="mt-3 text-3xl font-bold tabular-nums text-white">
+                    {{ pending_booking_count|default:0 }}
+                </p>
+            </div>
+
+            <a href="{% url 'cine_admin:payment_list' %}?status=success"
+               class="group rounded-xl border border-gray-800 bg-gray-900 p-5 transition hover:border-amber-500/60 hover:bg-gray-800/80">
+                <div class="flex items-center justify-between">
+                    <p class="text-sm font-medium text-gray-400">Payments Requiring Attention</p>
+                    <span class="text-lg">⚠️</span>
+                </div>
+                <p class="mt-3 text-3xl font-bold tabular-nums text-white">
+                    {{ payment_attention_count|default:0 }}
+                </p>
+                <p class="mt-3 text-sm font-medium text-amber-400 group-hover:text-amber-300">
+                    Review payment mismatches →
+                </p>
+            </a>
+
+        </div>
+    </section>
+
+    <!-- Staff Management -->
+    {% if request.user.is_superuser %}
+    <section>
+        <div class="mb-4">
+            <h2 class="text-lg font-semibold text-white">Staff Management</h2>
+            <p class="mt-1 text-sm text-gray-500">
+                Manage system administrators and support staff accounts.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+
+            <div class="flex items-center justify-between gap-4 rounded-xl border border-gray-800 bg-gray-900 p-5">
+                <div class="flex min-w-0 items-center gap-4">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-indigo-500/10 text-xl">🛡️</span>
+                    <div class="min-w-0">
+                        <p class="text-sm font-medium text-gray-400">Administrators</p>
+                        <p class="mt-1 text-2xl font-bold tabular-nums text-white">{{ admin_count|default:0 }}</p>
+                    </div>
+                </div>
+                <a href="{% url 'cine_admin:staff_list' %}"
+                   class="shrink-0 text-sm font-medium text-red-400 hover:text-red-300">
+                    View list →
+                </a>
+            </div>
+
+            <div class="flex items-center justify-between gap-4 rounded-xl border border-gray-800 bg-gray-900 p-5">
+                <div class="flex min-w-0 items-center gap-4">
+                    <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-teal-500/10 text-xl">👥</span>
+                    <div class="min-w-0">
+                        <p class="text-sm font-medium text-gray-400">Support Staff</p>
+                        <p class="mt-1 text-2xl font-bold tabular-nums text-white">{{ staff_count|default:0 }}</p>
+                    </div>
+                </div>
+                <div class="flex shrink-0 flex-col items-end gap-1.5">
+                    <a href="{% url 'cine_admin:staff_list' %}"
+                       class="text-sm font-medium text-red-400 hover:text-red-300">
+                        View list →
+                    </a>
+                    <a href="{% url 'cine_admin:support_staff_create' %}"
+                       class="text-xs text-gray-400 hover:text-white">
+                        + Add staff
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </section>
+    {% endif %}
+
+    <!-- Reports -->
+    <section>
+        <div class="mb-4">
+            <h2 class="text-lg font-semibold text-white">Reports</h2>
+            <p class="mt-1 text-sm text-gray-500">
+                Compare booking activity across movies and cinema halls.
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <a href="{% url 'cine_admin:movie_booking_report' %}"
+               class="group rounded-xl border border-gray-800 bg-gray-900 p-5 transition hover:border-red-500/60 hover:bg-gray-800/80">
+                <div class="flex items-center justify-between">
+                    <h3 class="font-semibold text-white group-hover:text-red-400">Movie-wise Bookings</h3>
+                    <span class="text-gray-600 transition group-hover:translate-x-1 group-hover:text-red-400">→</span>
+                </div>
+                <p class="mt-2 text-sm text-gray-400">
+                    Analyze reservation totals and performance per movie title.
+                </p>
+            </a>
+
+            <a href="{% url 'cine_admin:hall_booking_report' %}"
+               class="group rounded-xl border border-gray-800 bg-gray-900 p-5 transition hover:border-purple-500/60 hover:bg-gray-800/80">
+                <div class="flex items-center justify-between">
+                    <h3 class="font-semibold text-white group-hover:text-purple-400">Hall-wise Bookings</h3>
+                    <span class="text-gray-600 transition group-hover:translate-x-1 group-hover:text-purple-400">→</span>
+                </div>
+                <p class="mt-2 text-sm text-gray-400">
+                    Analyze reservation totals and seating utilization per cinema hall.
+                </p>
+            </a>
+        </div>
+    </section>
+
+</div>
+{% endblock %}

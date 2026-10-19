@@ -1,0 +1,49 @@
+
+{% extends "cine_admin/base.html" %}
+
+{% block title %}Hall Booking Report | CineMS Admin{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-5xl space-y-6">
+    <div>
+        <h1 class="text-3xl font-bold text-white">Hall-wise Bookings</h1>
+        <p class="mt-2 text-sm text-gray-400">
+            Review reservation counts by cinema hall.
+        </p>
+    </div>
+
+    <div class="overflow-x-auto rounded-xl border border-gray-800 bg-gray-900">
+        <table class="min-w-full divide-y divide-gray-800 text-left text-sm">
+            <thead class="bg-gray-950 text-gray-400">
+                <tr>
+                    <th class="px-5 py-4">Cinema</th>
+                    <th class="px-5 py-4">Hall</th>
+                    <th class="px-5 py-4">Total Bookings</th>
+                    <th class="px-5 py-4">Action</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-800 text-gray-300">
+                {% for hall in halls %}
+                <tr class="hover:bg-gray-800/60">
+                    <td class="px-5 py-4">{{ hall.cinema.name }}</td>
+                    <td class="px-5 py-4 font-medium text-white">{{ hall.name }}</td>
+                    <td class="px-5 py-4">{{ hall.booking_count }}</td>
+                    <td class="px-5 py-4">
+                        <a href="{% url 'cine_admin:booking_list' %}?hall={{ hall.pk }}"
+                           class="text-purple-400 hover:text-purple-300">
+                            View bookings →
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="4" class="px-5 py-8 text-center text-gray-500">
+                        No cinema halls found.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,126 @@
+
+{% extends "cine_admin/base.html" %}
+
+{% block title %}Bookings | CineMS Admin{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-7xl space-y-6">
+    <div>
+        <h1 class="text-3xl font-bold text-white">Booking Management</h1>
+        <p class="mt-2 text-sm text-gray-400">
+            Filter and review customer reservations.
+        </p>
+    </div>
+
+    <form method="get"
+          class="grid grid-cols-1 gap-4 rounded-xl border border-gray-800 bg-gray-900 p-5 sm:grid-cols-2 xl:grid-cols-4">
+
+        <div>
+            <label class="mb-2 block text-sm text-gray-400">Movie</label>
+            <select name="movie" class="w-full rounded-lg border border-gray-700 bg-gray-950 p-3 text-white">
+                <option value="">All movies</option>
+                {% for movie in movies %}
+                <option value="{{ movie.pk }}" {% if selected_movie == movie.pk|stringformat:"s" %}selected{% endif %}>
+                    {{ movie.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <label class="mb-2 block text-sm text-gray-400">Cinema hall</label>
+            <select name="hall" class="w-full rounded-lg border border-gray-700 bg-gray-950 p-3 text-white">
+                <option value="">All halls</option>
+                {% for hall in halls %}
+                <option value="{{ hall.pk }}" {% if selected_hall == hall.pk|stringformat:"s" %}selected{% endif %}>
+                    {{ hall.name }} — {{ hall.cinema.name }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <label class="mb-2 block text-sm text-gray-400">Reservation status</label>
+            <select name="reservation_status" class="w-full rounded-lg border border-gray-700 bg-gray-950 p-3 text-white">
+                <option value="">All reservation statuses</option>
+                {% for value, label in reservation_statuses %}
+                <option value="{{ value }}" {% if selected_reservation_status == value %}selected{% endif %}>
+                    {{ label }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div>
+            <label class="mb-2 block text-sm text-gray-400">Payment status</label>
+            <select name="payment_status" class="w-full rounded-lg border border-gray-700 bg-gray-950 p-3 text-white">
+                <option value="">All payment statuses</option>
+                {% for value, label in payment_statuses %}
+                <option value="{{ value }}" {% if selected_payment_status == value %}selected{% endif %}>
+                    {{ label }}
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="flex gap-3 sm:col-span-2 xl:col-span-4">
+            <button class="rounded-lg bg-red-600 px-5 py-3 font-semibold text-white hover:bg-red-500">
+                Apply filters
+            </button>
+            <a href="{% url 'cine_admin:booking_list' %}"
+               class="rounded-lg border border-gray-700 px-5 py-3 text-gray-300 hover:bg-gray-800">
+                Reset
+            </a>
+        </div>
+    </form>
+
+    <div class="overflow-x-auto rounded-xl border border-gray-800 bg-gray-900">
+        <table class="min-w-full divide-y divide-gray-800 text-left text-sm">
+            <thead class="bg-gray-950 text-gray-400">
+                <tr>
+                    <th class="px-4 py-4">Customer</th>
+                    <th class="px-4 py-4">Movie</th>
+                    <th class="px-4 py-4">Showtime</th>
+                    <th class="px-4 py-4">Hall</th>
+                    <th class="px-4 py-4">Seat</th>
+                    <th class="px-4 py-4">Reservation</th>
+                    <th class="px-4 py-4">Payment</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-gray-800 text-gray-300">
+                {% for booking in bookings %}
+                <tr class="hover:bg-gray-800/60">
+                    <td class="px-4 py-4">
+                        {{ booking.customer.get_full_name|default:booking.customer.username }}
+                    </td>
+                    <td class="px-4 py-4 font-medium text-white">
+                        {{ booking.show.movie.name }}
+                    </td>
+                    <td class="px-4 py-4">
+                        {{ booking.show.showtime|date:"M d, Y H:i" }}
+                    </td>
+                    <td class="px-4 py-4">
+                        {{ booking.show.cinemahallauditorium.cinemahall.name }}
+                    </td>
+                    <td class="px-4 py-4">{{ booking.seat.name }}</td>
+                    <td class="px-4 py-4">{{ booking.get_status_display }}</td>
+                    <td class="px-4 py-4">
+                        {% if booking.master_reservation %}
+                            {{ booking.master_reservation.status|title }}
+                        {% else %}
+                            <span class="text-gray-500">No payment record</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="7" class="px-5 py-8 text-center text-gray-500">
+                        No bookings match these filters.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

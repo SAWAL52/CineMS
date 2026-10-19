@@ -1,0 +1,106 @@
+
+{% extends "cine_admin/base.html" %}
+
+{% block title %}Movie Shows | CineMS Admin{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+
+    <div class="flex flex-wrap items-end justify-between gap-4">
+        <div>
+            <p class="text-sm font-semibold uppercase tracking-widest text-red-400">
+                Scheduling
+            </p>
+            <h1 class="mt-2 text-3xl font-extrabold">Movie Shows</h1>
+            <p class="mt-2 text-slate-400">
+                Manage screenings and auditorium assignments.
+            </p>
+        </div>
+
+        <a href="{% url 'cine_admin:show_create' %}"
+           class="rounded-lg bg-red-600 px-5 py-3 font-semibold hover:bg-red-500">
+            + Schedule a show
+        </a>
+    </div>
+
+    <div class="overflow-hidden rounded-2xl border border-white/10 bg-slate-900">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm">
+                <thead class="bg-white/5 text-xs uppercase tracking-wider text-slate-400">
+                    <tr>
+                        <th class="px-5 py-4">Movie</th>
+                        <th class="px-5 py-4">Cinema venue</th>
+                        <th class="px-5 py-4">Auditorium</th>
+                        <th class="px-5 py-4">Date and time</th>
+                        <th class="px-5 py-4">Ticket price</th>
+                    </tr>
+                </thead>
+
+                <tbody class="divide-y divide-white/10">
+                    {% for show in shows %}
+                    <tr class="hover:bg-white/[0.03]">
+
+                        <td class="px-5 py-4">
+                            <p class="font-semibold">{{ show.movie.name }}</p>
+                            <p class="mt-1 text-xs text-slate-500">
+                                {{ show.movie.genre }}
+                            </p>
+                        </td>
+
+                        <td class="px-5 py-4">
+                            <p class="font-medium">
+                                {{ show.cinemahallauditorium.cinemahall.name }}
+                            </p>
+
+                            {% if show.cinemahallauditorium.cinemahall.cinema %}
+                                <p class="mt-1 text-xs text-slate-400">
+                                    {{ show.cinemahallauditorium.cinemahall.cinema.name }}
+                                </p>
+                            {% endif %}
+                        </td>
+
+                        <td class="px-5 py-4">
+                            {% if show.cinemahallauditorium %}
+                                <span class="rounded-lg border border-red-500/20 bg-red-500/10 px-3 py-2 text-red-300">
+                                    {{ show.cinemahallauditorium.name }}
+                                </span>
+                            {% else %}
+                                <span class="text-yellow-400">Not assigned</span>
+                            {% endif %}
+                        </td>
+
+                        <td class="px-5 py-4">
+                            <p>{{ show.showtime|date:"d M Y" }}</p>
+                            <p class="mt-1 text-xs text-slate-400">
+                                {{ show.showtime|date:"h:i A" }}
+                            </p>
+                        </td>
+
+                        <td class="px-5 py-4 font-semibold">
+                            NPR {{ show.price|floatformat:2 }}
+                        </td>
+
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" class="px-5 py-12 text-center">
+                            <p class="text-3xl">📅</p>
+                            <h2 class="mt-3 font-bold">No shows scheduled</h2>
+                            <p class="mt-2 text-sm text-slate-400">
+                                Schedule your first screening to get started.
+                            </p>
+
+                            <a href="{% url 'cine_admin:show_create' %}"
+                               class="mt-5 inline-flex rounded-lg bg-red-600 px-4 py-2 font-semibold hover:bg-red-500">
+                                Schedule a show
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

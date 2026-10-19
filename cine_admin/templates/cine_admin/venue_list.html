@@ -1,0 +1,152 @@
+
+{% extends "cine_admin/base.html" %}
+
+{% block content %}
+<div class="space-y-8">
+
+    <!-- Header -->
+    <div class="flex flex-col sm:flex-row sm:items-center
+                sm:justify-between gap-4">
+        <div>
+            <h1 class="text-3xl font-bold text-white">Cinema Venues</h1>
+            <p class="text-gray-400 mt-2">
+                Manage cinema locations across your network.
+            </p>
+        </div>
+
+        <a href="{% url 'cine_admin:venue_create' %}"
+           class="inline-flex items-center justify-center gap-2
+                  bg-red-600 hover:bg-red-700 text-white
+                  font-semibold px-5 py-3 rounded-lg transition">
+            <span class="text-xl">+</span>
+            Add Venue
+        </a>
+    </div>
+
+    <!-- Summary -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
+            <p class="text-sm text-gray-400">Total Venues</p>
+            <p class="text-3xl font-bold text-white mt-2">
+                {{ venues|length }}
+            </p>
+        </div>
+
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
+            <p class="text-sm text-gray-400">Cinema Brands</p>
+            <p class="text-3xl font-bold text-white mt-2">
+                {{ venues.all|length }}
+            </p>
+        </div>
+
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-5">
+            <p class="text-sm text-gray-400">Management</p>
+            <p class="text-sm text-gray-300 mt-3">
+                Create venues and assign auditoriums to each location.
+            </p>
+        </div>
+    </div>
+
+    <!-- Venue Table -->
+    <div class="bg-gray-900 border border-gray-800 rounded-xl overflow-hidden">
+        <div class="px-6 py-5 border-b border-gray-800">
+            <h2 class="text-lg font-semibold text-white">
+                Registered Venues
+            </h2>
+        </div>
+
+        {% if venues %}
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead class="bg-gray-800/70 text-gray-400 text-sm">
+                    <tr>
+                        <th class="px-6 py-4 font-medium">Venue</th>
+                        <th class="px-6 py-4 font-medium">Cinema Brand</th>
+                        <th class="px-6 py-4 font-medium">Location</th>
+                        <th class="px-6 py-4 font-medium text-center">
+                            Auditoriums
+                        </th>
+                        <th class="px-6 py-4 font-medium text-right">
+                            Actions
+                        </th>
+                    </tr>
+                </thead>
+
+                <tbody class="divide-y divide-gray-800">
+                    {% for venue in venues %}
+                    <tr class="hover:bg-gray-800/40 transition">
+                        <td class="px-6 py-5">
+                            <div class="font-semibold text-white">
+                                {{ venue.name }}
+                            </div>
+                            <div class="text-xs text-gray-500 mt-1">
+                                Venue ID: {{ venue.pk }}
+                            </div>
+                        </td>
+
+                        <td class="px-6 py-5">
+                            {% if venue.cinema %}
+                                <span class="inline-flex rounded-full
+                                             bg-red-950 text-red-300
+                                             px-3 py-1 text-sm">
+                                    {{ venue.cinema.name }}
+                                </span>
+                            {% else %}
+                                <span class="text-gray-500">
+                                    Not assigned
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td class="px-6 py-5 text-gray-300">
+                            {% if venue.location %}
+                                {{ venue.location }}
+                            {% else %}
+                                <span class="text-gray-500">
+                                    Not specified
+                                </span>
+                            {% endif %}
+                        </td>
+
+                        <td class="px-6 py-5 text-center">
+                            <span class="inline-flex items-center
+                                         justify-center min-w-9 h-9
+                                         rounded-lg bg-gray-800
+                                         text-white font-semibold px-2">
+                                {{ venue.auditorium_count }}
+                            </span>
+                        </td>
+
+                        <td class="px-6 py-5 text-right">
+                            <a href="{% url 'cine_admin:auditorium_list' %}"
+                               class="text-red-400 hover:text-red-300
+                                      font-medium text-sm">
+                                View auditoriums &rarr;
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% else %}
+        <div class="text-center py-16 px-6">
+            <div class="text-5xl mb-4">🏢</div>
+            <h3 class="text-xl font-semibold text-white">
+                No venues registered
+            </h3>
+            <p class="text-gray-400 mt-2 mb-6">
+                Add your first cinema venue to start configuring auditoriums.
+            </p>
+            <a href="{% url 'cine_admin:venue_create' %}"
+               class="inline-block bg-red-600 hover:bg-red-700
+                      text-white px-5 py-3 rounded-lg font-semibold">
+                Create First Venue
+            </a>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}

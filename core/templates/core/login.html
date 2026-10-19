@@ -1,0 +1,122 @@
+
+{% extends "core/base.html" %}
+
+{% block title %}Login | CineMS{% endblock %}
+
+{% block content %}
+
+<section class="min-h-[80vh] flex items-center justify-center px-5 py-16">
+
+    <div class="w-full max-w-md rounded-2xl border border-white/10 bg-[#14141f] p-8 shadow-2xl sm:p-10">
+
+        <!-- Heading -->
+        <div class="mb-8 text-center">
+
+            <a href="{% url 'home' %}"
+               class="mb-5 inline-block text-2xl font-extrabold tracking-tight">
+                Cine<span class="text-rose-500">Verse</span>
+            </a>
+
+            <h1 class="text-3xl font-extrabold text-white">
+                Welcome <span class="text-rose-500">Back</span>
+            </h1>
+
+            <p class="mt-3 text-sm leading-6 text-gray-400">
+                Sign in to your account and continue your movie experience.
+            </p>
+
+        </div>
+
+        <!-- Login Form -->
+        <form method="POST"
+              action="{% url 'login' %}"
+              class="space-y-5">
+
+            {% csrf_token %}
+
+            <!-- Non-field Errors -->
+            {% if form.non_field_errors %}
+                <div class="rounded-xl border border-rose-500/20 bg-rose-500/10 p-4">
+                    {% for error in form.non_field_errors %}
+                        <p class="text-sm text-rose-300">
+                            {{ error }}
+                        </p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- Django Form Fields -->
+            {% for field in form %}
+                <div>
+
+                    <label for="{{ field.id_for_label }}"
+                           class="mb-2 block text-sm font-semibold text-gray-300">
+                        {{ field.label }}
+                    </label>
+
+                    {{ field }}
+
+                    {% for error in field.errors %}
+                        <p class="mt-2 text-sm text-rose-400">
+                            {{ error }}
+                        </p>
+                    {% endfor %}
+
+                </div>
+            {% endfor %}
+
+            <!-- Django Messages -->
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="rounded-lg border px-4 py-3 text-sm
+                        {% if 'success' in message.tags %}
+                            border-emerald-500/20 bg-emerald-500/10 text-emerald-300
+                        {% elif 'error' in message.tags %}
+                            border-rose-500/20 bg-rose-500/10 text-rose-300
+                        {% elif 'warning' in message.tags %}
+                            border-yellow-500/20 bg-yellow-500/10 text-yellow-300
+                        {% else %}
+                            border-gray-500/20 bg-gray-500/10 text-gray-300
+                        {% endif %}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+
+            <!-- Submit Button -->
+            <button type="submit"
+                    class="w-full rounded-xl bg-rose-500 px-5 py-3.5 font-bold text-white transition duration-200 hover:bg-rose-400 focus:outline-none focus:ring-2 focus:ring-rose-400 focus:ring-offset-2 focus:ring-offset-[#14141f]">
+                Sign In
+            </button>
+
+        </form>
+        <!-- Forgot Password Link -->
+                <div class="flex justify-end">
+                    <a href="{% url 'password_reset' %}"
+                    class="text-sm font-semibold text-rose-400 transition hover:text-rose-300">
+                        Forgot password?
+                    </a>
+                </div>
+
+        <!-- Registration Link -->
+        <div class="mt-7 text-center">
+            <p class="text-sm text-gray-400">
+                Don't have an account?
+
+                <a href="{% url 'register' %}"
+                   class="ml-1 font-semibold text-rose-400 transition hover:text-rose-300">
+                    Create Account
+                </a>
+            </p>
+        </div>
+
+        <!-- Footer Note -->
+        <p class="mt-8 text-center text-xs leading-5 text-gray-500">
+            Your next cinema experience awaits.
+        </p>
+
+    </div>
+
+</section>
+
+{% endblock %}

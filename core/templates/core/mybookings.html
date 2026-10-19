@@ -1,0 +1,467 @@
+
+{% extends "core/base.html" %}
+
+{% block title %}My Bookings | CineMS{% endblock %}
+
+{% block content %}
+
+<div class="min-h-screen bg-slate-950 text-white">
+
+    <!-- Page Header -->
+    <header class="border-b border-white/10 bg-gradient-to-br from-slate-900 via-slate-950 to-red-950/30">
+        <div class="mx-auto max-w-7xl px-6 py-12">
+
+            <p class="mb-3 text-sm font-semibold uppercase tracking-[0.25em] text-red-400">
+                Your cinema experience
+            </p>
+
+            <h1 class="text-4xl font-extrabold tracking-tight sm:text-5xl">
+                My Bookings
+            </h1>
+
+            <p class="mt-4 max-w-2xl text-slate-400">
+                Keep track of your movie tickets, showtimes, assigned auditoriums,
+                seats, and payment details all in one place.
+            </p>
+
+            <div class="mt-6 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-slate-300">
+                <span class="h-2 w-2 rounded-full bg-red-500"></span>
+                {{ bookings|length }}
+                booking{{ bookings|length|pluralize }}
+            </div>
+
+        </div>
+    </header>
+
+    <!-- Booking List -->
+    <main class="mx-auto max-w-7xl px-6 py-10">
+
+        {% if bookings %}
+
+            <div class="space-y-7">
+
+                {% for booking in bookings %}
+
+                    <article class="overflow-hidden rounded-2xl border border-white/10 bg-slate-900 shadow-lg shadow-black/20">
+
+                        <!-- Booking Header -->
+                        <div class="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 px-6 py-5">
+
+                            <div>
+                                <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">
+                                    Booking reference
+                                </p>
+
+                                <p class="mt-1 font-mono text-sm text-slate-200">
+                                    {% if booking.master %}
+                                        #{{ booking.master.pk }}
+                                    {% else %}
+                                        #{{ booking.reservations.0.pk }}
+                                    {% endif %}
+                                </p>
+                            </div>
+
+                            {% if booking.status_code == "cm" %}
+                                <span class="rounded-full border border-green-500/30 bg-green-500/10 px-3 py-1.5 text-xs font-semibold text-green-400">
+                                    ✓ Confirmed
+                                </span>
+
+                            {% elif booking.status_code == "pd" %}
+                                <span class="rounded-full border border-yellow-500/30 bg-yellow-500/10 px-3 py-1.5 text-xs font-semibold text-yellow-400">
+                                    Pending
+                                </span>
+
+                            {% elif booking.status_code == "cl" %}
+                                <span class="rounded-full border border-red-500/30 bg-red-500/10 px-3 py-1.5 text-xs font-semibold text-red-400">
+                                    Cancelled
+                                </span>
+
+                            {% elif booking.status_code == "ex" %}
+                                <span class="rounded-full border border-slate-500/30 bg-slate-500/10 px-3 py-1.5 text-xs font-semibold text-slate-400">
+                                    Expired
+                                </span>
+
+                            {% else %}
+                                <span class="rounded-full bg-white/10 px-3 py-1.5 text-xs text-slate-300">
+                                    {{ booking.status }}
+                                </span>
+                            {% endif %}
+
+                        </div>
+
+                        <!-- Movie and Booking Details -->
+                        <div class="grid gap-6 p-6 lg:grid-cols-[190px_1fr]">
+
+                            <!-- Movie Poster -->
+                            <div>
+                                {% if booking.show.movie.poster %}
+                                    <img
+                                        src="{{ booking.show.movie.poster.url }}"
+                                        alt="{{ booking.show.movie.name }}"
+                                        class="aspect-[2/3] w-full rounded-xl object-cover shadow-lg"
+                                    >
+                                {% else %}
+                                    <div class="flex aspect-[2/3] items-center justify-center rounded-xl bg-slate-800 text-slate-500">
+                                        <div class="text-center">
+                                            <span class="text-4xl">🎬</span>
+                                            <p class="mt-2 text-sm">
+                                                No poster available
+                                            </p>
+                                        </div>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Details -->
+                            <div class="min-w-0">
+
+                                <!-- Movie Information -->
+                                <div class="border-b border-white/10 pb-5">
+
+                                    <p class="text-sm text-red-400">
+                                        {{ booking.show.movie.genre }}
+                                    </p>
+
+                                    <h2 class="mt-2 text-2xl font-bold sm:text-3xl">
+                                        {{ booking.show.movie.name }}
+                                    </h2>
+
+                                    <p class="mt-2 text-sm text-slate-500">
+                                        Booking information and screening details
+                                    </p>
+
+                                </div>
+
+                                <!-- Cinema Venue and Assigned Auditorium -->
+                                <div class="grid gap-4 border-b border-white/10 py-5 sm:grid-cols-2">
+
+                                    <!-- Cinema Venue -->
+                                    <div class="flex items-start gap-3 rounded-xl border border-white/10 bg-white/5 p-4">
+
+                                        <div class="rounded-lg bg-white/5 p-3 text-xl">
+                                            📍
+                                        </div>
+
+                                        <div class="min-w-0">
+
+                                            <p class="text-xs uppercase tracking-wider text-slate-500">
+                                                Cinema Venue
+                                            </p>
+
+                                            {% if booking.show.cinemahallauditorium %}
+
+                                                <p class="mt-2 font-semibold text-slate-200">
+                                                    {{ booking.show.cinemahallauditorium.cinemahall.name }}
+                                                </p>
+
+                                                {% if booking.show.cinemahallauditorium.cinemahall.cinema %}
+                                                    <p class="mt-1 text-sm text-slate-400">
+                                                        {{ booking.show.cinemahallauditorium.cinemahall.cinema.name }}
+                                                    </p>
+                                                {% endif %}
+
+                                                {% if booking.show.cinemahallauditorium.cinemahall.location %}
+                                                    <p class="mt-1 text-sm text-slate-400">
+                                                        {{ booking.show.cinemahallauditorium.cinemahall.location }}
+                                                    </p>
+                                                {% endif %}
+
+                                            {% else %}
+
+                                                <p class="mt-2 text-sm text-yellow-400">
+                                                    Venue information unavailable
+                                                </p>
+
+                                            {% endif %}
+
+                                        </div>
+                                    </div>
+
+                                    <!-- Assigned Auditorium -->
+                                    <div class="flex items-start gap-3 rounded-xl border border-red-500/20 bg-red-500/5 p-4">
+
+                                        <div class="rounded-lg bg-red-500/10 p-3 text-xl">
+                                            🎞️
+                                        </div>
+
+                                        <div class="min-w-0">
+
+                                            <p class="text-xs uppercase tracking-wider text-slate-500">
+                                                Assigned Auditorium
+                                            </p>
+
+                                            {% if booking.show.cinemahallauditorium %}
+
+                                                <p class="mt-2 text-lg font-bold text-red-300">
+                                                    {{ booking.show.cinemahallauditorium.name }}
+                                                </p>
+
+                                                <p class="mt-1 text-sm text-slate-400">
+                                                    Screening room
+                                                </p>
+
+                                            {% else %}
+
+                                                <p class="mt-2 text-sm text-yellow-400">
+                                                    Not assigned yet
+                                                </p>
+
+                                            {% endif %}
+
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                <!-- Show Information -->
+                                <div class="grid gap-5 border-b border-white/10 py-5 sm:grid-cols-2">
+
+                                    <!-- Show Date -->
+                                    <div class="flex items-start gap-3">
+                                        <div class="rounded-lg bg-white/5 p-3">
+                                            📅
+                                        </div>
+
+                                        <div>
+                                            <p class="text-xs text-slate-500">
+                                                Show date
+                                            </p>
+
+                                            <p class="mt-1 font-semibold">
+                                                {{ booking.show.showtime|date:"D, d M Y" }}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Show Time -->
+                                    <div class="flex items-start gap-3">
+                                        <div class="rounded-lg bg-white/5 p-3">
+                                            🕒
+                                        </div>
+
+                                        <div>
+                                            <p class="text-xs text-slate-500">
+                                                Show time
+                                            </p>
+
+                                            <p class="mt-1 font-semibold">
+                                                {{ booking.show.showtime|date:"h:i A" }}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                    <!-- Seats -->
+                                    <div class="flex items-start gap-3">
+                                        <div class="rounded-lg bg-white/5 p-3">
+                                            💺
+                                        </div>
+
+                                        <div>
+                                            <p class="text-xs text-slate-500">
+                                                Seats
+                                            </p>
+
+                                            <div class="mt-2 flex flex-wrap gap-2">
+
+                                                {% for seat in booking.seats %}
+                                                    <span class="rounded-md border border-red-500/30 bg-red-500/10 px-3 py-1 text-sm font-semibold text-red-300">
+                                                        {{ seat }}
+                                                    </span>
+                                                {% empty %}
+                                                    <span class="text-sm text-slate-500">
+                                                        No seats available
+                                                    </span>
+                                                {% endfor %}
+
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Number of Tickets -->
+                                    <div class="flex items-start gap-3">
+                                        <div class="rounded-lg bg-white/5 p-3">
+                                            🎟️
+                                        </div>
+
+                                        <div>
+                                            <p class="text-xs text-slate-500">
+                                                Number of tickets
+                                            </p>
+
+                                            <p class="mt-1 font-semibold">
+                                                {{ booking.seats|length }}
+                                                ticket{{ booking.seats|length|pluralize }}
+                                            </p>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                                <!-- Payment Summary -->
+                                <div class="grid gap-5 py-5 sm:grid-cols-2">
+
+                                    <!-- Booking Date -->
+                                    <div>
+                                        <p class="text-xs text-slate-500">
+                                            Booking date
+                                        </p>
+
+                                        <p class="mt-1 text-sm font-medium">
+                                            {{ booking.created_at|date:"d M Y, h:i A" }}
+                                        </p>
+                                    </div>
+
+                                    <!-- Price Per Ticket -->
+                                    <div>
+                                        <p class="text-xs text-slate-500">
+                                            Price per ticket
+                                        </p>
+
+                                        <p class="mt-1 text-sm font-medium">
+                                            NPR {{ booking.show.price|floatformat:2 }}
+                                        </p>
+                                    </div>
+
+                                    <!-- Payment Status -->
+                                    <div>
+                                        <p class="text-xs text-slate-500">
+                                            Payment status
+                                        </p>
+
+                                        {% if booking.master %}
+
+                                            {% if booking.master.status == "success" %}
+                                                <p class="mt-1 font-semibold text-green-400">
+                                                    ✓ Paid
+                                                </p>
+
+                                            {% elif booking.master.status == "cancelled" %}
+                                                <p class="mt-1 font-semibold text-red-400">
+                                                    Cancelled
+                                                </p>
+
+                                            {% else %}
+                                                <p class="mt-1 font-semibold text-yellow-400">
+                                                    {{ booking.master.status|title }}
+                                                </p>
+                                            {% endif %}
+
+                                        {% else %}
+
+                                            <p class="mt-1 text-slate-400">
+                                                Not available
+                                            </p>
+
+                                        {% endif %}
+                                    </div>
+
+                                    <!-- Total Amount -->
+                                    <div class="rounded-xl border border-red-500/20 bg-red-500/5 p-4">
+
+                                        <p class="text-xs text-slate-400">
+                                            Total amount
+                                        </p>
+
+                                        <p class="mt-1 text-2xl font-extrabold text-red-400">
+                                            NPR {{ booking.total_price|floatformat:2 }}
+                                        </p>
+
+                                    </div>
+
+                                </div>
+
+                                <!-- Payment Reference -->
+                                {% if booking.master and booking.master.payment_id %}
+
+                                    <div class="border-t border-white/10 pt-4">
+
+                                        <p class="text-xs text-slate-500">
+                                            Payment reference
+                                        </p>
+
+                                        <p class="mt-1 break-all font-mono text-xs text-slate-400">
+                                            {{ booking.master.payment_id }}
+                                        </p>
+
+                                    </div>
+
+                                {% endif %}
+
+                            </div>
+                        </div>
+
+                        <!-- Action Bar: PDF Receipt -->
+                        {% if booking.master and booking.master.status == "success" %}
+
+                            <div class="flex flex-wrap items-center justify-between gap-4 border-t border-white/10 bg-slate-950/50 px-6 py-4">
+
+                                <span class="text-xs text-slate-400">
+                                    📄 Official E-Ticket & Entry Pass
+                                </span>
+
+                                <a
+                                    href="{% url 'download_receipt_pdf' booking.master.pk %}"
+                                    class="inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white shadow-md transition hover:bg-red-500 hover:shadow-red-900/40"
+                                >
+                                    <svg
+                                        class="h-4 w-4"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        viewBox="0 0 24 24"
+                                        aria-hidden="true"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            stroke-width="2"
+                                            d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                                        />
+                                    </svg>
+
+                                    Download PDF Receipt
+                                </a>
+
+                            </div>
+
+                        {% endif %}
+
+                    </article>
+
+                {% endfor %}
+
+            </div>
+
+        {% else %}
+
+            <!-- Empty State -->
+            <div class="mx-auto max-w-xl rounded-2xl border border-white/10 bg-slate-900 px-6 py-16 text-center">
+
+                <div class="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-white/5">
+                    <span class="text-4xl">🎬</span>
+                </div>
+
+                <h2 class="mt-6 text-2xl font-bold">
+                    No bookings yet
+                </h2>
+
+                <p class="mx-auto mt-3 max-w-sm text-sm leading-6 text-slate-400">
+                    You haven't booked any movies yet. Explore what's showing
+                    and reserve your seats for your next cinema experience.
+                </p>
+
+                <a
+                    href="{% url 'home' %}"
+                    class="mt-7 inline-flex items-center justify-center rounded-lg bg-red-600 px-6 py-3 font-semibold text-white transition hover:bg-red-500"
+                >
+                    Explore Movies
+                </a>
+
+            </div>
+
+        {% endif %}
+
+    </main>
+
+</div>
+
+{% endblock %}

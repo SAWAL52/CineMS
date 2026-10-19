@@ -1,0 +1,531 @@
+
+{% extends "core/base.html" %}
+
+{% block title %}Hall Management | CineMS{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-slate-50">
+    <div class="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+
+        <!-- Page heading -->
+        <div class="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <div class="mb-2 flex items-center gap-2 text-sm text-slate-500">
+                    <a href="/" class="transition hover:text-indigo-600">CineMS</a>
+                    <span>/</span>
+                    <span class="text-slate-700">Hall Management</span>
+                </div>
+
+                <h1 class="text-3xl font-bold tracking-tight text-slate-900 sm:text-4xl">
+                    Hall Management
+                </h1>
+
+                <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-500 sm:text-base">
+                    Manage cinema halls, configure seating layouts, and prepare your auditoriums for upcoming shows.
+                </p>
+            </div>
+
+            <div class="flex items-center gap-3 rounded-2xl border border-indigo-100 bg-white px-4 py-3 shadow-sm">
+                <div class="flex h-11 w-11 items-center justify-center rounded-xl bg-indigo-50 text-indigo-600">
+                    <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <rect x="3" y="4" width="18" height="16" rx="2"/>
+                        <path d="M7 8h.01M11 8h.01M15 8h.01M19 8h.01M7 12h.01M11 12h.01M15 12h.01M19 12h.01M7 16h10"/>
+                    </svg>
+                </div>
+                <div>
+                    <p class="text-xs font-medium uppercase tracking-wider text-slate-500">
+                        Registered halls
+                    </p>
+                    <p class="text-2xl font-bold text-slate-900">
+                        {{ halls|length }}
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Django messages -->
+        {% if messages %}
+            <div class="mb-6 space-y-3">
+                {% for message in messages %}
+                    <div class="flex items-start gap-3 rounded-xl border px-4 py-3
+                        {% if message.tags == 'success' %}
+                            border-emerald-200 bg-emerald-50 text-emerald-800
+                        {% else %}
+                            border-rose-200 bg-rose-50 text-rose-800
+                        {% endif %}">
+                        <span class="mt-0.5 font-bold">
+                            {% if message.tags == 'success' %}✓{% else %}!{% endif %}
+                        </span>
+                        <p class="text-sm font-medium">{{ message }}</p>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <!-- Main workspace -->
+        <div class="grid grid-cols-1 items-start gap-6 xl:grid-cols-5">
+
+            <!-- Configuration panel -->
+            <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm xl:col-span-2">
+                <div class="border-b border-slate-100 px-6 py-5">
+                    <div class="flex items-center gap-3">
+                        <div class="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-600 text-white">
+                            <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                <path d="M4 21v-7m0-4V3m8 18v-9m0-4V3m8 18v-5m0-4V3M2 10h4m4-2h4m4 6h4"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="text-lg font-bold text-slate-900">Configure a hall</h2>
+                            <p class="text-sm text-slate-500">Set the auditorium and seat dimensions.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <form method="POST" id="hall-form" class="space-y-5 p-6">
+                    {% csrf_token %}
+
+                    {% if form.non_field_errors %}
+                        <div class="rounded-xl border border-rose-200 bg-rose-50 p-4 text-sm text-rose-700">
+                            {{ form.non_field_errors }}
+                        </div>
+                    {% endif %}
+
+
+
+                    <!-- Existing hall -->
+                    <div>
+                        <label for="{{ form.existing_hall.id_for_label }}"
+                               class="mb-2 block text-sm font-semibold text-slate-700">
+                            Existing hall
+                            <span class="font-normal text-slate-400">(optional)</span>
+                        </label>
+
+                        {{ form.existing_hall }}
+
+                        <p class="mt-1.5 text-xs leading-5 text-slate-500">
+                            Select a hall to update its layout. Leave it unselected to create a new hall.
+                        </p>
+
+                        {% for error in form.existing_hall.errors %}
+                            <p class="mt-1.5 text-sm text-rose-600">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+
+                    <!-- New hall -->
+                    <div>
+                        <label for="{{ form.new_hall_name.id_for_label }}"
+                               class="mb-2 block text-sm font-semibold text-slate-700">
+                            New hall name
+                        </label>
+
+                        {{ form.new_hall_name }}
+
+                        <p class="mt-1.5 text-xs leading-5 text-slate-500">
+                            Required only when creating a new hall. Example: Hall 1 or VIP Hall.
+                        </p>
+
+                        {% for error in form.new_hall_name.errors %}
+                            <p class="mt-1.5 text-sm text-rose-600">{{ error }}</p>
+                        {% endfor %}
+                    </div>
+
+                    <div class="border-t border-slate-100"></div>
+
+                    <!-- Layout dimensions -->
+                    <div>
+                        <h3 class="text-sm font-semibold text-slate-800">Seating dimensions</h3>
+                        <p class="mt-1 text-xs text-slate-500">Choose the number of rows and seats per row.</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="{{ form.rows.id_for_label }}"
+                                   class="mb-2 block text-sm font-medium text-slate-700">
+                                Rows
+                            </label>
+
+                            {{ form.rows }}
+
+                            {% for error in form.rows.errors %}
+                                <p class="mt-1.5 text-xs text-rose-600">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+
+                        <div>
+                            <label for="{{ form.columns.id_for_label }}"
+                                   class="mb-2 block text-sm font-medium text-slate-700">
+                                Seats per row
+                            </label>
+
+                            {{ form.columns }}
+
+                            {% for error in form.columns.errors %}
+                                <p class="mt-1.5 text-xs text-rose-600">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Seat total -->
+                    <div class="rounded-xl border border-indigo-100 bg-indigo-50/70 p-4">
+                        <div class="flex items-center justify-between gap-3">
+                            <div>
+                                <p class="text-sm font-semibold text-indigo-950">Total seating capacity</p>
+                                <p class="mt-1 text-xs text-indigo-700">Calculated automatically</p>
+                            </div>
+
+                            <div class="text-right">
+                                <span id="seat-count" class="text-3xl font-bold tracking-tight text-indigo-700">0</span>
+                                <span class="block text-xs text-indigo-600">seats</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <button type="button"
+                            id="preview-button"
+                            class="flex w-full items-center justify-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-indigo-300 hover:bg-indigo-50 hover:text-indigo-700">
+                        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/>
+                            <circle cx="12" cy="12" r="3"/>
+                        </svg>
+                        Refresh seat preview
+                    </button>
+
+                    <button type="submit"
+                            id="save-button"
+                            class="flex w-full items-center justify-center gap-2 rounded-xl bg-indigo-600 px-4 py-3.5 text-sm font-semibold text-white shadow-sm transition hover:bg-indigo-700 focus:outline-none focus:ring-4 focus:ring-indigo-200">
+                        <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <path d="M5 3h12l4 4v14H3V3h2Z"/>
+                            <path d="M7 3v6h10V3M7 21v-8h10v8"/>
+                        </svg>
+                        Save hall and seating layout
+                    </button>
+
+                    <p class="text-center text-xs leading-5 text-slate-400">
+                        Changes are saved to your database only after submission.
+                    </p>
+                </form>
+            </section>
+
+            <!-- Preview panel -->
+            <section class="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm xl:col-span-3">
+                <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-6 py-5">
+                    <div>
+                        <h2 class="text-lg font-bold text-slate-900">Seating layout preview</h2>
+                        <p class="mt-1 text-sm text-slate-500">A visual representation of your auditorium.</p>
+                    </div>
+
+                    <span id="preview-status"
+                          class="rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                        Live preview
+                    </span>
+                </div>
+
+                <div class="p-5 sm:p-8">
+                    <!-- Screen -->
+                    <div class="mx-auto mb-3 max-w-xl">
+                        <div class="h-1.5 rounded-full bg-gradient-to-r from-transparent via-indigo-500 to-transparent"></div>
+                        <div class="pt-3 text-center text-xs font-bold uppercase tracking-[0.3em] text-slate-400">
+                            Screen
+                        </div>
+                    </div>
+
+                    <!-- Seat grid -->
+                    <div id="seat-preview"
+                         class="mt-8 min-h-48 space-y-3 overflow-x-auto pb-4">
+                        <p class="py-12 text-center text-sm text-slate-400">
+                            Enter your seating dimensions to see the layout.
+                        </p>
+                    </div>
+
+                    <!-- Legend -->
+                    <div class="mt-5 flex flex-wrap items-center justify-center gap-x-5 gap-y-2 border-t border-slate-100 pt-5">
+                        <div class="flex items-center gap-2">
+                            <span class="h-3 w-3 rounded border border-indigo-200 bg-indigo-50"></span>
+                            <span class="text-xs text-slate-500">Seat preview</span>
+                        </div>
+                        <p class="text-xs text-slate-400">
+                            Seat names follow row letters and column numbers.
+                        </p>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- Existing halls -->
+        <section class="mt-8 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-6 py-5">
+                <div>
+                    <h2 class="text-lg font-bold text-slate-900">Registered halls</h2>
+                    <p class="mt-1 text-sm text-slate-500">An overview of your existing cinema halls.</p>
+                </div>
+
+                <span class="rounded-lg bg-slate-100 px-3 py-1.5 text-sm font-semibold text-slate-600">
+                    {{ halls|length }} total
+                </span>
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead>
+                        <tr class="bg-slate-50 text-xs uppercase tracking-wider text-slate-500">
+                            <th class="px-6 py-4 font-semibold">Cinema</th>
+                            <th class="px-6 py-4 font-semibold">Hall name</th>
+                            <th class="px-6 py-4 font-semibold">Seats</th>
+                            <th class="px-6 py-4 font-semibold">Status</th>
+                        </tr>
+                    </thead>
+
+                    <tbody class="divide-y divide-slate-100">
+                        {% for hall in halls %}
+                            <tr class="transition hover:bg-slate-50">
+                                <td class="whitespace-nowrap px-6 py-4">
+                                    <div class="flex items-center gap-3">
+                                        <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-slate-100 font-bold text-slate-600">
+                                            {{ hall.cinema.name|default:"?"|first|upper }}
+                                        </div>
+                                        <span class="font-medium text-slate-700">
+                                            {{ hall.cinema.name|default:"Unassigned" }}
+                                        </span>
+                                    </div>
+                                </td>
+
+                                <td class="whitespace-nowrap px-6 py-4 font-semibold text-slate-900">
+                                    {{ hall.name }}
+                                </td>
+
+                                <td class="whitespace-nowrap px-6 py-4">
+                                    <span class="rounded-lg bg-indigo-50 px-2.5 py-1 font-semibold text-indigo-700">
+                                        {{ hall.seats.count }}
+                                    </span>
+                                </td>
+
+                                <td class="whitespace-nowrap px-6 py-4">
+                                    <span class="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 text-xs font-semibold text-emerald-700">
+                                        <span class="h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+                                        Registered
+                                    </span>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="4" class="px-6 py-14 text-center">
+                                    <div class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-slate-100 text-slate-400">
+                                        <svg class="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                                            <rect x="3" y="4" width="18" height="16" rx="2"/>
+                                            <path d="M7 8h.01M11 8h.01M15 8h.01M19 8h.01M7 12h.01M11 12h.01M15 12h.01M19 12h.01"/>
+                                        </svg>
+                                    </div>
+                                    <p class="font-semibold text-slate-700">No halls registered yet</p>
+                                    <p class="mt-1 text-sm text-slate-400">Create your first hall using the form above.</p>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+
+        <p class="mt-6 text-center text-xs text-slate-400">
+            CineMS Hall Management
+        </p>
+    </div>
+</div>
+
+<!-- Serialize Django data outside JavaScript syntax. -->
+{{ hall_cinema_map|json_script:"hall-cinema-data" }}
+
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const form = document.getElementById("hall-form");
+    const rowsInput = document.getElementById("id_rows");
+    const columnsInput = document.getElementById("id_columns");
+    const hallSelect = document.getElementById("id_existing_hall");
+    const newHallInput = document.getElementById("id_new_hall_name");
+    const seatCount = document.getElementById("seat-count");
+    const preview = document.getElementById("seat-preview");
+    const previewButton = document.getElementById("preview-button");
+    const previewStatus = document.getElementById("preview-status");
+
+    if (
+        !form || !rowsInput || !columnsInput ||
+        !hallSelect || !newHallInput || !seatCount || !preview ||
+        !previewButton || !previewStatus
+    ) {
+        console.error("Hall management: required elements are missing.");
+        return;
+    }
+
+    // Style Django-rendered form controls without changing their names.
+    form.querySelectorAll("input, select").forEach(function (field) {
+        field.classList.add(
+            "block", "w-full", "rounded-xl", "border", "border-slate-300",
+            "bg-white", "px-3.5", "py-3", "text-sm", "text-slate-800",
+            "outline-none", "transition", "focus:border-indigo-500",
+            "focus:ring-4", "focus:ring-indigo-100"
+        );
+    });
+
+    function getRowLabel(number) {
+        let label = "";
+
+        while (number > 0) {
+            number--;
+            label = String.fromCharCode(65 + number % 26) + label;
+            number = Math.floor(number / 26);
+        }
+
+        return label;
+    }
+
+    function updatePreview() {
+        const rows = Number(rowsInput.value);
+        const columns = Number(columnsInput.value);
+
+        const valid =
+            Number.isInteger(rows) &&
+            Number.isInteger(columns) &&
+            rows >= 1 && rows <= 100 &&
+            columns >= 1 && columns <= 100;
+
+        seatCount.textContent = valid ? String(rows * columns) : "0";
+        preview.replaceChildren();
+
+        if (!valid) {
+            const message = document.createElement("p");
+            message.className =
+                "py-12 text-center text-sm text-rose-600";
+            message.textContent =
+                "Enter between 1 and 100 rows and columns.";
+            preview.appendChild(message);
+
+            previewStatus.textContent = "Check dimensions";
+            previewStatus.className =
+                "rounded-full bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700";
+            return;
+        }
+
+        // A warning helps avoid accidentally generating a huge preview.
+        if (rows * columns > 500) {
+            previewStatus.textContent = "Large layout";
+            previewStatus.className =
+                "rounded-full bg-amber-50 px-3 py-1 text-xs font-semibold text-amber-700";
+        } else {
+            previewStatus.textContent = "Live preview";
+            previewStatus.className =
+                "rounded-full bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700";
+        }
+
+        for (let r = 1; r <= rows; r++) {
+            const row = document.createElement("div");
+            row.className = "flex min-w-max items-center justify-center gap-1.5 sm:gap-2";
+
+            const label = document.createElement("span");
+            label.className =
+                "w-7 shrink-0 text-right text-xs font-bold text-slate-400";
+            label.textContent = getRowLabel(r);
+            row.appendChild(label);
+
+            for (let c = 1; c <= columns; c++) {
+                const name = getRowLabel(r) + c;
+                const seat = document.createElement("div");
+
+                seat.className =
+                    "flex h-8 w-8 shrink-0 items-center justify-center " +
+                    "rounded-t-lg rounded-b-md border border-indigo-200 " +
+                    "bg-indigo-50 text-[10px] font-semibold text-indigo-700 " +
+                    "transition hover:border-indigo-500 hover:bg-indigo-100 " +
+                    "sm:h-9 sm:w-10 sm:text-xs";
+
+                seat.textContent = name;
+                seat.title = "Seat " + name;
+                row.appendChild(seat);
+            }
+
+            preview.appendChild(row);
+        }
+    }
+
+    // Read JSON safely generated by Django's json_script filter.
+    const dataElement = document.getElementById("hall-cinema-data");
+    const hallCinemaMap = dataElement
+        ? JSON.parse(dataElement.textContent)
+        : {};
+
+    const allHallOptions = Array.from(hallSelect.options)
+        .filter(function (option) {
+            return option.value !== "";
+        })
+        .map(function (option) {
+            return {
+                value: option.value,
+                text: option.textContent,
+                cinemaId: hallCinemaMap[option.value] || ""
+            };
+        });
+
+    function filterHalls() {
+        const selectedCinema = cinemaSelect.value;
+        const previousHall = hallSelect.value;
+
+        hallSelect.replaceChildren();
+
+        const placeholder = document.createElement("option");
+        placeholder.value = "";
+        placeholder.textContent = "Create a new hall instead";
+        hallSelect.appendChild(placeholder);
+
+        allHallOptions.forEach(function (hall) {
+            if (hall.cinemaId === selectedCinema) {
+                const option = document.createElement("option");
+                option.value = hall.value;
+                option.textContent = hall.text;
+                hallSelect.appendChild(option);
+            }
+        });
+
+        const hallStillAvailable = Array.from(hallSelect.options)
+            .some(function (option) {
+                return option.value === previousHall && previousHall !== "";
+            });
+
+        hallSelect.value = hallStillAvailable ? previousHall : "";
+    }
+
+    cinemaSelect.addEventListener("change", filterHalls);
+
+    hallSelect.addEventListener("change", function () {
+        if (hallSelect.value) {
+            newHallInput.value = "";
+        }
+    });
+
+    newHallInput.addEventListener("input", function () {
+        if (newHallInput.value.trim()) {
+            hallSelect.value = "";
+        }
+    });
+
+    rowsInput.addEventListener("input", updatePreview);
+    columnsInput.addEventListener("input", updatePreview);
+    previewButton.addEventListener("click", updatePreview);
+
+    form.addEventListener("submit", function (event) {
+        const rows = Number(rowsInput.value);
+        const columns = Number(columnsInput.value);
+
+        if (
+            !Number.isInteger(rows) || !Number.isInteger(columns) ||
+            rows < 1 || rows > 100 || columns < 1 || columns > 100
+        ) {
+            event.preventDefault();
+            updatePreview();
+            rowsInput.focus();
+        }
+    });
+
+    filterHalls();
+    updatePreview();
+});
+</script>
+{% endblock %}

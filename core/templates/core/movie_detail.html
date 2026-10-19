@@ -1,0 +1,270 @@
+
+{% extends "core/base.html" %}
+
+{% block title %}{{ movie.name }} | CineMS{% endblock %}
+
+{% block extra_css %}
+<style>
+    .movie-backdrop {
+        background:
+            linear-gradient(to right, #0b0b12 5%, rgba(11,11,18,.88) 55%, rgba(11,11,18,.45)),
+            linear-gradient(to top, #0b0b12 0%, transparent 65%),
+            radial-gradient(circle at 75% 30%, #4c1d3d 0%, #171323 45%, #0b0b12 100%);
+    }
+
+    .poster-shadow {
+        box-shadow: 0 25px 70px rgba(0, 0, 0, .55);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Movie Hero -->
+<section class="movie-backdrop">
+    <div class="mx-auto max-w-7xl px-5 py-12 sm:py-16 lg:px-8 lg:py-20">
+
+        <div class="grid items-center gap-10 md:grid-cols-[280px_1fr] lg:grid-cols-[340px_1fr] lg:gap-16">
+
+            <!-- Movie Poster -->
+            <div class="mx-auto w-full max-w-[280px] md:max-w-none">
+                <div class="poster-shadow aspect-[2/3] overflow-hidden rounded-2xl border border-white/10 bg-[#181824]">
+
+                    {% if movie.poster %}
+                        <img
+                            src="{{ movie.poster.url }}"
+                            alt="{{ movie.name }} poster"
+                            class="h-full w-full object-cover"
+                        >
+                    {% else %}
+                        <div class="flex h-full flex-col items-center justify-center gap-4 text-gray-500">
+                            <span class="text-7xl">🎬</span>
+                            <p>No poster available</p>
+                        </div>
+                    {% endif %}
+
+                </div>
+
+                <p class="mt-4 text-center text-xs uppercase tracking-[0.25em] text-gray-500">
+                    Now exploring on CineMS
+                </p>
+            </div>
+
+            <!-- Movie Information -->
+            <div class="py-2">
+
+                <div class="mb-6 flex flex-wrap items-center gap-3">
+                    <span class="rounded-full bg-rose-500/15 px-4 py-2 text-xs font-bold uppercase tracking-wider text-rose-300 ring-1 ring-rose-500/30">
+                        {{ movie.genre }}
+                    </span>
+
+                    <span class="text-sm text-gray-500">
+                        Movie Details
+                    </span>
+                </div>
+
+                <h1 class="max-w-3xl break-words text-4xl font-extrabold leading-tight tracking-tight sm:text-5xl lg:text-7xl">
+                    {{ movie.name }}
+                </h1>
+
+                <div class="mt-6 flex flex-wrap items-center gap-4 text-sm text-gray-400">
+                    <span class="flex items-center gap-2">
+                        <span class="text-rose-400">●</span>
+                        {{ movie.genre }}
+                    </span>
+
+                    <span class="text-gray-700">|</span>
+
+                    <span>Cinematic Experience</span>
+                </div>
+
+                <div class="my-8 h-px max-w-xl bg-white/10"></div>
+
+                <h2 class="mb-3 text-lg font-bold">
+                    About this movie
+                </h2>
+
+                <p class="max-w-2xl text-base leading-8 text-gray-400">
+                    Discover {{ movie.name }}, a {{ movie.genre|lower }} movie
+                    in the CineMS collection. Explore the movie and check
+                    available screenings to plan your next cinema experience.
+                </p>
+
+                <!-- Actions -->
+                <div class="mt-9 flex flex-wrap gap-4">
+
+                    <a
+                        href="#showtimes"
+                        class="inline-flex items-center justify-center gap-2 rounded-xl bg-rose-500 px-7 py-4 font-bold shadow-lg shadow-rose-950/30 transition hover:-translate-y-0.5 hover:bg-rose-400"
+                    >
+                        <span>▸</span>
+                        Explore Showtimes
+                    </a>
+
+                    <a
+                        href="{% url 'home' %}"
+                        class="inline-flex items-center justify-center rounded-xl border border-white/15 bg-white/5 px-7 py-4 font-semibold transition hover:bg-white/10"
+                    >
+                        Browse More Movies
+                    </a>
+
+                </div>
+
+                <p class="mt-6 text-xs leading-6 text-gray-500">
+                    Movie information and screenings may vary by cinema.
+                </p>
+
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- Showtimes Section -->
+<section id="showtimes" class="mx-auto max-w-7xl px-5 py-16 lg:px-8">
+
+    <div class="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
+        <div>
+            <p class="text-xs font-bold uppercase tracking-[0.25em] text-rose-400">
+                Plan your visit
+            </p>
+
+            <h2 class="mt-3 text-3xl font-extrabold sm:text-4xl">
+                Available Showtimes
+            </h2>
+
+            <p class="mt-3 max-w-xl text-sm leading-6 text-gray-400">
+                Choose a cinema, screening time, and ticket price for
+                {{ movie.name }}.
+            </p>
+        </div>
+
+        <span class="w-fit rounded-full border border-rose-400/20 bg-rose-400/10 px-4 py-2 text-xs font-semibold text-rose-300">
+            Upcoming Screenings
+        </span>
+    </div>
+
+    <!-- Display available screenings -->
+    <div class="mt-8 grid gap-5 md:grid-cols-2">
+
+        {% for show in shows %}
+
+        <div class="rounded-2xl border border-white/10 bg-[#14141f] p-6 transition hover:border-rose-400/40">
+
+            <!-- Cinema and Hall -->
+            <div class="flex items-start justify-between gap-4">
+
+                <div>
+                    <h3 class="text-lg font-bold">
+                        {% if show.cinemahall.cinema %}
+                            {{ show.cinemahall.cinema.name }}
+                        {% else %}
+                            Cinema
+                        {% endif %}
+                    </h3>
+
+                    <p class="mt-1 text-sm text-gray-400">
+                        Hall: {{ show.cinemahall.name }}
+                    </p>
+
+                    {% if show.cinemahall.cinema %}
+                    <p class="mt-1 text-sm text-gray-500">
+                        {{ show.cinemahall.cinema.location }}
+                    </p>
+                    {% endif %}
+                </div>
+
+                <span class="rounded-lg bg-rose-500/10 px-3 py-2 text-xl">
+                    🎬
+                </span>
+
+            </div>
+
+            <div class="my-5 h-px bg-white/10"></div>
+
+            <!-- Date and Time -->
+            <div class="flex flex-wrap items-center justify-between gap-4">
+
+                <div>
+                    <p class="text-xs uppercase tracking-wider text-gray-500">
+                        Date
+                    </p>
+
+                    <p class="mt-2 font-semibold">
+                        {{ show.showtime|date:"D, d M Y" }}
+                    </p>
+                </div>
+
+                <div>
+                    <p class="text-xs uppercase tracking-wider text-gray-500">
+                        Show Time
+                    </p>
+
+                    <p class="mt-2 font-semibold text-rose-300">
+                        {{ show.showtime|date:"g:i A" }}
+                    </p>
+                </div>
+
+            </div>
+
+            <!-- Ticket Price -->
+            <div class="mt-6 flex items-center justify-between rounded-xl bg-white/5 p-4">
+
+                <div>
+                    <p class="text-xs text-gray-400">
+                        Ticket Price
+                    </p>
+
+                    <p class="mt-1 text-xl font-extrabold">
+                        Rs. {{ show.price }}
+                    </p>
+                </div>
+
+                <span class="text-sm text-gray-400">
+                    Per ticket
+                </span>
+
+            </div>
+
+            <!-- Booking Button (display only for now) -->
+            <a href="{%url 'hall_seats' show.id %}"
+               class="mt-5 flex w-full items-center justify-center rounded-xl bg-rose-500 px-5 py-3 font-bold transition hover:bg-rose-400">
+                Select Screening
+            </a>
+
+        </div>
+
+        {% empty %}
+
+        <!-- No screenings available -->
+        <div class="rounded-2xl border border-white/10 bg-[#14141f] p-8 md:col-span-2">
+
+            <div class="flex flex-col items-center text-center">
+
+                <span class="text-5xl">🎟️</span>
+
+                <h3 class="mt-5 text-xl font-bold">
+                    No Upcoming Showtimes
+                </h3>
+
+                <p class="mt-3 max-w-lg text-sm leading-7 text-gray-400">
+                    There are currently no upcoming screenings for
+                    {{ movie.name }}. Please check again later.
+                </p>
+
+                <a href="{% url 'home' %}"
+                   class="mt-6 rounded-xl border border-white/15 px-6 py-3 font-semibold transition hover:border-rose-400 hover:text-rose-300">
+                    Browse Other Movies
+                </a>
+
+            </div>
+        </div>
+
+        {% endfor %}
+
+    </div>
+
+</section>
+
+
+{% endblock %}

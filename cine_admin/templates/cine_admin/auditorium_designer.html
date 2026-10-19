@@ -1,0 +1,168 @@
+
+{% extends "cine_admin/base.html" %}
+
+{% block title %}Design Auditorium | CineMS Admin{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-5xl space-y-8">
+
+    <div>
+        <a href="{% url 'cine_admin:auditorium_list' %}"
+           class="text-sm text-red-400 hover:text-red-300">
+            ← Back to auditoriums
+        </a>
+
+        <h1 class="mt-4 text-3xl font-extrabold">Auditorium Designer</h1>
+
+        <p class="mt-2 text-slate-400">
+            Configure the layout for {{ auditorium.name }}.
+        </p>
+    </div>
+
+    <div class="rounded-2xl border border-white/10 bg-slate-900 p-6">
+        <p class="text-xs font-semibold uppercase tracking-widest text-slate-500">
+            Cinema venue
+        </p>
+
+        <h2 class="mt-2 text-xl font-bold">
+            {{ auditorium.cinemahall.name }}
+        </h2>
+
+        <p class="mt-1 text-sm text-slate-400">
+            {{ auditorium.cinemahall.location }}
+        </p>
+    </div>
+
+    <form method="post"
+          class="space-y-6 rounded-2xl border border-white/10 bg-slate-900 p-6">
+        {% csrf_token %}
+
+        <div>
+            <h2 class="text-xl font-bold">Seat layout configuration</h2>
+            <p class="mt-2 text-sm text-slate-400">
+                Specify the number of rows and seats per row. Existing booked seats
+                must be preserved when updating a layout.
+            </p>
+        </div>
+
+        <div class="grid gap-5 sm:grid-cols-2">
+            <div>
+                <label for="rows"
+                       class="mb-2 block text-sm font-medium text-slate-300">
+                    Number of rows
+                </label>
+                <input id="rows" name="rows" type="number"
+                       min="1" max="26" required
+                       placeholder="e.g. 10"
+                       class="w-full rounded-lg border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-red-500">
+                <p class="mt-2 text-xs text-slate-500">
+                    Rows will be labelled A, B, C and so on.
+                </p>
+            </div>
+
+            <div>
+                <label for="seats_per_row"
+                       class="mb-2 block text-sm font-medium text-slate-300">
+                    Seats per row
+                </label>
+                <input id="seats_per_row" name="seats_per_row"
+                       type="number" min="1" max="40" required
+                       placeholder="e.g. 12"
+                       class="w-full rounded-lg border border-white/10 bg-slate-950 px-4 py-3 text-white outline-none focus:border-red-500">
+                <p class="mt-2 text-xs text-slate-500">
+                    Each row will be numbered from 1 onwards.
+                </p>
+            </div>
+        </div>
+
+        <div class="rounded-xl border border-yellow-500/20 bg-yellow-500/5 p-4">
+            <p class="font-semibold text-yellow-300">Before generating</p>
+            <p class="mt-1 text-sm text-slate-400">
+                Do not delete and recreate existing seats blindly. Some may already
+                be referenced by pending or confirmed reservations.
+            </p>
+        </div>
+
+        <div class="flex flex-wrap gap-3">
+            <button type="button" id="preview-button"
+                    class="rounded-lg border border-white/10 px-5 py-3 font-semibold hover:bg-white/5">
+                Preview layout
+            </button>
+
+            <button type="submit"
+                    class="rounded-lg bg-red-600 px-5 py-3 font-semibold hover:bg-red-500">
+                Generate and save seats
+            </button>
+        </div>
+    </form>
+
+    <section class="rounded-2xl border border-white/10 bg-slate-900 p-6">
+        <h2 class="text-xl font-bold">Layout preview</h2>
+
+        <div class="mt-5 rounded-xl bg-slate-950 p-4 sm:p-6">
+            <div class="mx-auto mb-8 max-w-2xl rounded-t-full border-t-4 border-red-400 bg-white/5 py-3 text-center text-sm font-semibold tracking-[0.3em] text-slate-300">
+                SCREEN
+            </div>
+
+            <div id="layout-preview"
+                 class="space-y-3 overflow-x-auto">
+                <p class="text-center text-sm text-slate-500">
+                    Enter the row and seat counts, then select Preview layout.
+                </p>
+            </div>
+        </div>
+    </section>
+
+</div>
+
+<script>
+(function () {
+    const rowsInput = document.getElementById("rows");
+    const seatsInput = document.getElementById("seats_per_row");
+    const previewButton = document.getElementById("preview-button");
+    const preview = document.getElementById("layout-preview");
+
+    previewButton.addEventListener("click", function () {
+        const rows = Number(rowsInput.value);
+        const seatsPerRow = Number(seatsInput.value);
+
+        preview.replaceChildren();
+
+        if (
+            !Number.isInteger(rows) ||
+            !Number.isInteger(seatsPerRow) ||
+            rows < 1 || rows > 26 ||
+            seatsPerRow < 1 || seatsPerRow > 40
+        ) {
+            const message = document.createElement("p");
+            message.className = "text-center text-sm text-red-400";
+            message.textContent = "Enter 1–26 rows and 1–40 seats per row.";
+            preview.appendChild(message);
+            return;
+        }
+
+        for (let r = 0; r < rows; r++) {
+            const row = document.createElement("div");
+            row.className = "flex min-w-max items-center justify-center gap-2";
+
+            const label = document.createElement("span");
+            label.className = "w-5 text-xs text-slate-400";
+            label.textContent = String.fromCharCode(65 + r);
+            row.appendChild(label);
+
+            for (let n = 1; n <= seatsPerRow; n++) {
+                const seat = document.createElement("span");
+                seat.className =
+                    "flex h-7 w-7 items-center justify-center rounded-t-lg " +
+                    "border border-green-500/30 bg-green-500/15 text-[10px] text-green-300";
+                seat.textContent = n;
+                seat.title = `${String.fromCharCode(65 + r)}${n}`;
+                row.appendChild(seat);
+            }
+
+            preview.appendChild(row);
+        }
+    });
+})();
+</script>
+{% endblock %}

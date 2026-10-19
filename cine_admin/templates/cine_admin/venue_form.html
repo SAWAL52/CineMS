@@ -1,0 +1,62 @@
+
+{% extends "cine_admin/base.html" %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto">
+    <div class="mb-8">
+        <a href="{% url 'cine_admin:venue_list' %}"
+           class="text-sm text-gray-400 hover:text-white">
+            &larr; Back to venues
+        </a>
+
+        <h1 class="text-3xl font-bold mt-4">Add Cinema Venue</h1>
+        <p class="text-gray-400 mt-2">
+            Register a physical cinema location.
+        </p>
+    </div>
+
+    <form method="post"
+          class="bg-gray-900 border border-gray-700 rounded-2xl p-6 md:p-8 space-y-6">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+        <div class="rounded-lg border border-red-700 bg-red-950 p-4 text-red-300">
+            {{ form.non_field_errors }}
+        </div>
+        {% endif %}
+
+        {% for field in form %}
+        <div>
+            <label for="{{ field.id_for_label }}"
+                   class="block text-sm font-medium text-gray-200 mb-2">
+                {{ field.label }}
+            </label>
+
+            {{ field }}
+
+            {% if field.help_text %}
+            <p class="text-sm text-gray-400 mt-2">
+                {{ field.help_text }}
+            </p>
+            {% endif %}
+
+            {% for error in field.errors %}
+            <p class="text-sm text-red-400 mt-2">{{ error }}</p>
+            {% endfor %}
+        </div>
+        {% endfor %}
+
+        <div class="flex flex-wrap gap-3 pt-3">
+            <button type="submit"
+                    class="bg-red-600 hover:bg-red-700 text-white font-semibold px-6 py-3 rounded-lg">
+                Save Venue
+            </button>
+
+            <a href="{% url 'cine_admin:venue_list' %}"
+               class="border border-gray-600 hover:bg-gray-800 text-white px-6 py-3 rounded-lg">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

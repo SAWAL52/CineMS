@@ -1,0 +1,66 @@
+
+{% extends "cine_admin/base.html" %}
+
+{% block title %}Add Movie | CineMS Admin{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-3xl space-y-6">
+    <div>
+        <a href="{% url 'cine_admin:dashboard' %}"
+           class="text-sm text-gray-400 hover:text-red-400">
+            ← Back to Dashboard
+        </a>
+        <h1 class="mt-3 text-3xl font-bold text-white">Add Movie</h1>
+        <p class="mt-2 text-gray-400">
+            Add a movie to the CineMS movie catalogue.
+        </p>
+    </div>
+
+    <form method="post" enctype="multipart/form-data"
+          class="space-y-6 rounded-xl border border-gray-700
+                 bg-gray-900 p-6">
+        {% csrf_token %}
+
+        {% if form.non_field_errors %}
+            <div class="rounded-lg bg-red-900/40 p-4 text-red-300">
+                {{ form.non_field_errors }}
+            </div>
+        {% endif %}
+
+        {% for field in form %}
+            <div>
+                <label for="{{ field.id_for_label }}"
+                       class="mb-2 block font-medium text-gray-200">
+                    {{ field.label }}
+                </label>
+
+                {{ field }}
+
+                {% if field.help_text %}
+                    <p class="mt-1 text-sm text-gray-400">
+                        {{ field.help_text|safe }}
+                    </p>
+                {% endif %}
+
+                {% for error in field.errors %}
+                    <p class="mt-1 text-sm text-red-400">{{ error }}</p>
+                {% endfor %}
+            </div>
+        {% endfor %}
+
+        <div class="flex flex-wrap gap-3 pt-2">
+            <button type="submit"
+                    class="rounded-lg bg-red-600 px-6 py-3
+                           font-semibold text-white hover:bg-red-700">
+                Save Movie
+            </button>
+
+            <a href="{% url 'cine_admin:dashboard' %}"
+               class="rounded-lg border border-gray-700 px-6 py-3
+                      text-gray-300 hover:bg-gray-800">
+                Cancel
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}

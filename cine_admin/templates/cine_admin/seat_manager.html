@@ -1,0 +1,197 @@
+
+{% extends "cine_admin/base.html" %}
+
+{% block title %}Seat Manager | CineMS Admin{% endblock %}
+
+{% block content %}
+<div class="space-y-8">
+
+    <!-- Page Header -->
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+            <p class="text-sm text-gray-400">
+                <a href="{% url 'cine_admin:dashboard' %}"
+                   class="hover:text-red-400">Dashboard</a>
+                <span class="mx-2">/</span>
+                <a href="{% url 'cine_admin:auditorium_list' %}"
+                   class="hover:text-red-400">Auditoriums</a>
+                <span class="mx-2">/</span>
+                Seat Manager
+            </p>
+
+            <h1 class="mt-3 text-3xl font-bold text-white">
+                Seat Manager
+            </h1>
+
+            <p class="mt-2 text-gray-400">
+                Manage and inspect the seating layout for this auditorium.
+            </p>
+        </div>
+
+        <a href="{% url 'cine_admin:auditorium_designer' auditorium.pk %}"
+           class="inline-flex items-center justify-center gap-2 rounded-lg
+                  bg-red-600 px-5 py-3 font-semibold text-white
+                  transition hover:bg-red-700">
+            <span>⚙</span>
+            Design Seat Layout
+        </a>
+    </div>
+
+    <!-- Auditorium Information -->
+    <div class="grid grid-cols-1 gap-4 md:grid-cols-3">
+
+        <div class="rounded-xl border border-gray-700 bg-gray-900 p-5">
+            <p class="text-sm text-gray-400">Cinema Venue</p>
+            <h2 class="mt-2 text-lg font-semibold text-white">
+                {{ auditorium.cinemahall.name }}
+            </h2>
+            <p class="mt-1 text-sm text-gray-400">
+                {{ auditorium.cinemahall.location }}
+            </p>
+        </div>
+
+        <div class="rounded-xl border border-gray-700 bg-gray-900 p-5">
+            <p class="text-sm text-gray-400">Auditorium</p>
+            <h2 class="mt-2 text-lg font-semibold text-white">
+                {{ auditorium.name }}
+            </h2>
+            <p class="mt-1 text-sm text-gray-400">
+                {{ auditorium.cinemahall.cinema.name|default:"Cinema" }}
+            </p>
+        </div>
+
+        <div class="rounded-xl border border-gray-700 bg-gray-900 p-5">
+            <p class="text-sm text-gray-400">Total Seats</p>
+            <h2 class="mt-2 text-3xl font-bold text-white">
+                {{ seats|length }}
+            </h2>
+            <p class="mt-1 text-sm text-gray-400">
+                Seats configured in this auditorium
+            </p>
+        </div>
+
+    </div>
+
+    <!-- Seat Layout -->
+    <div class="overflow-hidden rounded-xl border border-gray-700 bg-gray-900">
+
+        <div class="flex flex-col gap-3 border-b border-gray-700 p-5
+                    sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <h2 class="text-xl font-bold text-white">Seating Layout</h2>
+                <p class="mt-1 text-sm text-gray-400">
+                    Seats are grouped by their row labels.
+                </p>
+            </div>
+
+            <div class="flex flex-wrap gap-4 text-sm text-gray-300">
+                <div class="flex items-center gap-2">
+                    <span class="h-3 w-3 rounded bg-gray-700"></span>
+                    Configured seat
+                </div>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto p-5 sm:p-8">
+
+            {% if seats %}
+                <!-- Screen -->
+                <div class="mx-auto mb-10 max-w-3xl">
+                    <div class="h-2 rounded-full bg-gradient-to-r
+                                from-transparent via-gray-300 to-transparent">
+                    </div>
+                    <p class="mt-3 text-center text-xs font-semibold
+                              uppercase tracking-[0.4em] text-gray-400">
+                        Screen
+                    </p>
+                </div>
+
+                <!-- Rows -->
+                <div class="mx-auto max-w-5xl space-y-6">
+
+                    {% regroup seats by row as seat_rows %}
+
+                    {% for seat_row in seat_rows %}
+                        <div class="flex min-w-max items-center justify-center gap-3">
+
+                            <!-- Row Label -->
+                            <div class="flex h-9 w-9 shrink-0 items-center
+                                        justify-center rounded-lg bg-gray-800
+                                        text-sm font-bold text-red-400">
+                                {{ seat_row.grouper|default:"—" }}
+                            </div>
+
+                            <!-- Seats in Row -->
+                            <div class="flex flex-wrap justify-center gap-2">
+                                {% for seat in seat_row.list %}
+                                    <div title="Seat {{ seat.name }}"
+                                         class="flex h-10 w-10 items-center
+                                                justify-center rounded-lg
+                                                border border-gray-600
+                                                bg-gray-800 text-xs font-semibold
+                                                text-gray-200 transition
+                                                hover:border-red-500
+                                                hover:bg-gray-700">
+                                        {{ seat.number|default:seat.name }}
+                                    </div>
+                                {% endfor %}
+                            </div>
+
+                        </div>
+                    {% endfor %}
+
+                </div>
+
+                <div class="mt-10 text-center text-sm text-gray-500">
+                    {{ seats|length }} seat{{ seats|length|pluralize }}
+                    configured
+                </div>
+
+            {% else %}
+                <!-- Empty State -->
+                <div class="py-16 text-center">
+                    <div class="mx-auto flex h-16 w-16 items-center
+                                justify-center rounded-full bg-gray-800
+                                text-3xl">
+                        💺
+                    </div>
+
+                    <h3 class="mt-5 text-xl font-semibold text-white">
+                        No seats configured yet
+                    </h3>
+
+                    <p class="mx-auto mt-2 max-w-md text-gray-400">
+                        Generate a seating layout for this auditorium before
+                        creating shows and accepting reservations.
+                    </p>
+
+                    <a href="{% url 'cine_admin:auditorium_designer' auditorium.pk %}"
+                       class="mt-6 inline-flex items-center gap-2 rounded-lg
+                              bg-red-600 px-5 py-3 font-semibold text-white
+                              transition hover:bg-red-700">
+                        Design Seat Layout
+                        <span>→</span>
+                    </a>
+                </div>
+            {% endif %}
+
+        </div>
+    </div>
+
+    <!-- Footer Actions -->
+    <div class="flex flex-wrap items-center justify-between gap-4">
+        <a href="{% url 'cine_admin:auditorium_list' %}"
+           class="rounded-lg border border-gray-700 px-5 py-3
+                  font-medium text-gray-300 transition hover:bg-gray-800">
+            ← Back to Auditoriums
+        </a>
+
+        <a href="{% url 'cine_admin:show_list' %}"
+           class="rounded-lg bg-gray-800 px-5 py-3 font-medium
+                  text-white transition hover:bg-gray-700">
+            View Shows →
+        </a>
+    </div>
+
+</div>
+{% endblock %}
